@@ -17,57 +17,34 @@ X, y = make_classification(n_samples=SAMPLES, n_classes=NO_CLASSES, n_features=2
 # Subset data into train and test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE, random_state=2)
 
-# Gaussian Naive Bayes
-gnb = GaussianNB()
-time_start_gnb = time.perf_counter()
-gnb_model = gnb.fit(X_train, y_train)
-time_elapsed_gnb = (time.perf_counter() - time_start_gnb)
-# Model Values
-prob_gnb = gnb.predict_proba(X_test)[:, 1]
-y_pred_gnb = gnb_model.predict(X_test)
-gnb_accuracy = accuracy_score(y_test, y_pred_gnb)*100
-gnb_precision = precision_score(y_test, y_pred_gnb)*100
-gnb_recall = recall_score(y_test, y_pred_gnb)*100
+def create_model(model_type, X_train, y_train, X_test, y_test):
+    model_name = type(model_type).__name__
+    time_start = time.perf_counter()
+    model = model_type.fit(X_train, y_train)
+    time_elapsed = (time.perf_counter() - time_start)
 
-# Logistic Regression
-lr = LogisticRegression()
-time_start_lr = time.perf_counter()
-lr_model = lr.fit(X_train, y_train)
-time_elapsed_lr = (time.perf_counter() - time_start_lr)
-# Model Values
-prob_lr = lr.predict_proba(X_test)[:, 1]
-y_pred_lr = lr_model.predict(X_test)
-lr_accuracy = accuracy_score(y_test, y_pred_lr)*100
-lr_precision = precision_score(y_test, y_pred_lr)*100
-lr_recall = recall_score(y_test, y_pred_lr)*100
+    prob = model_type.predict_proba(X_test)[:, 1]
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred) * 100
+    precision = precision_score(y_test, y_pred) * 100
+    recall = recall_score(y_test, y_pred) * 100
+    auc = roc_auc_score(y_test, prob)
+    fpr, tpr, _ = roc_curve(y_test, prob)
 
-# AUC
-auc_gnb = roc_auc_score(y_test, prob_gnb)
-auc_lr = roc_auc_score(y_test, prob_lr)
+    print(f"{model_name} Metrics")
+    print("Computation Time:%5.4f seconds" % time_elapsed)
+    print("Accuracy: %.2f" % accuracy)
+    print("Precision: %.2f" % precision)
+    print("Recall: %.2f" % recall)
+    print('AUC=%.3f' % auc, "\n")
 
-# Gaussian Naive BAyes Metrics
-print("Gaussian Naive Bayes Metrics")
-print("GNB Computation Time:%5.4f seconds" % time_elapsed_gnb)
-print("GNB Accuracy: %.2f" % gnb_accuracy)
-print("GNB Precision: %.2f" % gnb_precision)
-print("GNB Recall: %.2f" % gnb_recall, "\n")
-print('GNB: AUC=%.3f' % auc_gnb)
+    plt.plot(fpr, tpr, marker='.', label=f'{model_name}')
 
-# Logistic Regression Metrics
-print("Logistic Regression Metrics")
-print("LR Computation Time:%5.4f seconds" % time_elapsed_lr)
-print("LR Accuracy: %.2f" % lr_accuracy)
-print("LR Precision: %.2f" % lr_precision)
-print("LR Recall: %.2f" % lr_recall, "\n")
-print('Logistic Regression: AUC=%.3f' % auc_lr)
 
-# Calculate ROC Curves
-gnb_fpr, gnb_tpr, _ = roc_curve(y_test, prob_gnb)
-lr_fpr, lr_tpr, _ = roc_curve(y_test, prob_lr)
+create_model(GaussianNB(), X_train, y_train, X_test, y_test)
+create_model(LogisticRegression(), X_train, y_train, X_test, y_test)
 
 plt.plot([0, 1], [0, 1], 'r--')
-plt.plot(gnb_fpr, gnb_tpr, marker='.', label='Naive Bayes')
-plt.plot(lr_fpr, lr_tpr, marker='.', label='Logistic Regression')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.legend()
