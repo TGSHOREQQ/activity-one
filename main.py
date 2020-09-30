@@ -1,3 +1,6 @@
+# Improvements
+# - Create dataset from scratch
+# -
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
@@ -17,6 +20,11 @@ X, y = make_classification(n_samples=SAMPLES, n_classes=NO_CLASSES, n_features=2
 # Subset data into train and test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE, random_state=2)
 
+# Models used in this activity
+models = [GaussianNB(), LogisticRegression()]
+
+# Function for fitting model and calculating metrics
+# global variables used as parameters. Improvement?
 def create_model(model_type, X_train, y_train, X_test, y_test):
     model_name = type(model_type).__name__
     time_start = time.perf_counter()
@@ -41,8 +49,8 @@ def create_model(model_type, X_train, y_train, X_test, y_test):
     plt.plot(fpr, tpr, marker='.', label=f'{model_name}')
 
 
-create_model(GaussianNB(), X_train, y_train, X_test, y_test)
-create_model(LogisticRegression(), X_train, y_train, X_test, y_test)
+for model in models:
+    create_model(model, X_train, y_train, X_test, y_test)
 
 plt.plot([0, 1], [0, 1], 'r--')
 plt.xlabel('False Positive Rate')
